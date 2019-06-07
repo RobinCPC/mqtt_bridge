@@ -73,7 +73,14 @@ class RosToMqttBridge(Bridge):
             self._last_published = now
 
     def _publish(self, msg):
-        payload = bytearray(self._serialize(extract_values(msg)))
+        #payload = bytearray(self._serialize(extract_values(msg)))
+        pl_dict = extract_values(msg)
+        payload = pl_dict["data"]
+        rospy.logdebug("ROS orignal publish:\n")
+        rospy.logdebug(msg)
+        rospy.logdebug(type(msg))
+        rospy.logdebug(extract_values(msg))
+        rospy.logdebug(type(extract_values(msg)))
         self._mqtt_client.publish(topic=self._topic_to, payload=payload)
 
 
@@ -108,7 +115,7 @@ class MqttToRosBridge(Bridge):
         :param userdata: user defined data
         :param mqtt.MQTTMessage mqtt_msg: MQTT message
         """
-        rospy.logdebug("MQTT received from {}".format(mqtt_msg.topic))
+        rospy.loginfo("MQTT received from {}".format(mqtt_msg.topic))
         now = rospy.get_time()
 
         if self._interval is None or now - self._last_published >= self._interval:
@@ -125,7 +132,13 @@ class MqttToRosBridge(Bridge):
         :param mqtt.Message mqtt_msg: MQTT Message
         :return rospy.Message: ROS Message
         """
-        msg_dict = self._deserialize(mqtt_msg.payload)
+        #msg_dict = self._deserialize(mqtt_msg.payload)
+        msg_dict = {"data" : mqtt_msg.payload}
+        rospy.logdebug("mqtt from cloud pure message")
+        rospy.logdebug(mqtt_msg.payload)
+        rospy.logdebug(mqtt_msg.topic)
+        rospy.logdebug("mqtt after deserial  message")
+        rospy.logdebug(msg_dict)
         return populate_instance(msg_dict, self._msg_type())
 
 
